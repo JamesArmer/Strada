@@ -21,7 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "comments VARCHAR(128));");
 
         //insert an initial run into the database
-        db.execSQL("INSERT INTO run (name, date, distance, duration, speed, comments) VALUES ('Morning Run', '23/12/2019', '4.95km', '26m 39s', '5:23 /km', 'Hard\n Sunny');");
+        db.execSQL("INSERT INTO run (name, date, distance, duration, speed, comments) VALUES ('Morning Run', '2019-12-23', '4.95km', '26m 39s', '5:23 /km', 'Hard. Sunny.');");
     }
 
 
