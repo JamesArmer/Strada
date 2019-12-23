@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/nameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Morning Run"
+        android:layout_toRightOf="@id/dateTextView"
+        android:layout_marginLeft="100dp"
+        android:textSize="20dp"
+        android:textColor="#000"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dateTextView"
+        android:textColor="#000"
+        android:text="23/12/2019"
+        android:textSize="20dp"/>
+
+
+    <TextView
+        android:id="@+id/distanceTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4.95km"
+        android:textColor="#000"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="10dp"
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/speedTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="5:23 /km"
+        android:textColor="#000"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="120dp"
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/durationTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="26m 39s"
+        android:textColor="#000"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="240dp"
+        android:textSize="20dp"/>
+
+</RelativeLayout>
