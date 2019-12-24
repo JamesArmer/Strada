@@ -88,6 +88,15 @@
             android:ems="20"
             android:inputType="textPersonName"
             android:hint="Comments" />
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="69dp"
+            android:background="#D000796B"
+            android:onClick="onSaveButtonClick"
+            android:text="Save"
+            android:textColor="#FFF" />
     </LinearLayout>
 
 

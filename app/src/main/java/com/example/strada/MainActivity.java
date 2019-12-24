@@ -1,5 +1,7 @@
 package com.example.strada;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 String comments = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.COMMENTS));
 
                 Bundle bundle = new Bundle();
+                bundle.putInt("function", 1);
                 bundle.putInt("ID", ID);
                 bundle.putString("name", name);
                 bundle.putString("date", date);
@@ -111,5 +114,33 @@ public class MainActivity extends AppCompatActivity {
 
         ListView listView = (ListView) findViewById(R.id.runListView);
         listView.setAdapter(dataAdapter);
+    }
+
+    public void onRecordButtonClick(View v){
+        Intent intent = new Intent(MainActivity.this, RecordActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case(EDIT_RUN_RESULT_CODE):
+                if(resultCode == Activity.RESULT_OK){
+                    Bundle bundle = data.getExtras();
+                    if(bundle.getInt("function") == 1){
+                        String runWhere = StradaProviderContract._ID + " = ?";
+                        int runID = bundle.getInt("ID");
+                        String[] runIDArg = {""+runID};
+
+                        ContentValues updateComments = new ContentValues();
+                        updateComments.put(StradaProviderContract.COMMENTS, bundle.getString("comments"));
+                        getContentResolver().update(StradaProviderContract.RUN_URI, updateComments, runWhere, runIDArg);
+                    }
+                }
+                break;
+        }
+        queryRun();
     }
 }

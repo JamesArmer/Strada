@@ -2,9 +2,12 @@ package com.example.strada;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -38,5 +41,16 @@ public class EditRunActivity extends AppCompatActivity {
         durationTV.setText(duration);
         speedTV.setText(speed);
         commentsET.setText(comments);
+    }
+
+    public void onSaveButtonClick(View v){
+        EditText commentsET = (EditText) findViewById(R.id.commentsEditText);
+        String comments = commentsET.getText().toString();
+        bundle.putString("comments", comments);
+
+        Intent result = new Intent();
+        result.putExtras(bundle);
+        setResult(Activity.RESULT_OK, result);
+        finish();
     }
 }
