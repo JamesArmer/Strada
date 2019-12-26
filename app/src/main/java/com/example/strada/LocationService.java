@@ -45,7 +45,7 @@ public class LocationService extends Service {
 
         public void run(){
             while(this.running){
-                try {Thread.sleep(1000);} catch(Exception e) {return;}//thread to do the callbacks for the tracking progress
+                try {Thread.sleep(2000);} catch(Exception e) {return;}//thread to do the callbacks for the tracking progress
                 doCallbacks();
             }
         }
