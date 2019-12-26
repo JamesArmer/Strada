@@ -42,6 +42,7 @@
                 android:layout_marginLeft="50dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:onClick="onRecordButtonClick"
                 app:srcCompat="@android:drawable/ic_dialog_map" />
 
             <TextView
