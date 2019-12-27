@@ -1,11 +1,13 @@
 package com.example.strada;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
@@ -14,6 +16,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.core.app.NotificationCompat;
 
@@ -21,6 +24,9 @@ public class LocationService extends Service {
     Tracking tracker;
     LocationManager locationManager;
     LocationListener locationListener;
+    Location currentLocation;
+
+    float distanceTravelled;
 
     protected locationServiceState state;
 
@@ -45,7 +51,7 @@ public class LocationService extends Service {
 
         public void run(){
             while(this.running){
-                try {Thread.sleep(2000);} catch(Exception e) {return;}//thread to do the callbacks for the tracking progress
+                try {Thread.sleep(1000);} catch(Exception e) {return;}//thread to do the callbacks for the tracking progress
                 doCallbacks();
             }
         }
@@ -71,7 +77,7 @@ public class LocationService extends Service {
         @Override
         public IBinder asBinder() {
             return this;
-        }//interface for the main activity
+        }//interface for the record activity
 
         public void record(){
             LocationService.this.record();
@@ -89,6 +95,8 @@ public class LocationService extends Service {
             LocationService.this.updateLocation();
         }
 
+        public float getDistance(){ return LocationService.this.getDistance();}
+
         public void registerCallback(ICallback callback) {
             this.callback = callback;
             remoteCallbackList.register(MyBinder.this);
@@ -101,9 +109,11 @@ public class LocationService extends Service {
         ICallback callback;
     }
 
+    @SuppressLint("MissingPermission")
     public void record(){
         if(this.state == locationServiceState.PAUSED) {
             this.state = locationServiceState.RECORDING;
+            currentLocation = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
         }
     }
 
@@ -127,9 +137,16 @@ public class LocationService extends Service {
                     5, // minimum time interval between updates
                     5, // minimum distance between updates, in metres
                     locationListener);
+            distanceTravelled += currentLocation.distanceTo(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+            currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Log.d("g53mdp", ""+distanceTravelled);
         } catch(SecurityException e) {
             Log.d("g53mdp", e.toString());
         }
+    }
+
+    public float getDistance(){
+        return distanceTravelled;
     }
 
     @Override
@@ -137,7 +154,7 @@ public class LocationService extends Service {
         Log.d("g53mdp", "service onCreate");
         super.onCreate();
         tracker = new Tracking();
-
+        distanceTravelled = 0;
         this.state = locationServiceState.PAUSED;
 
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);

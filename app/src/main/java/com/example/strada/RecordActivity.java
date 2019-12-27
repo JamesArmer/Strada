@@ -23,9 +23,14 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 public class RecordActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private LocationService.MyBinder myService = null;
+
+    int time;
 
     private MapView mapView;
     private GoogleMap mMap;
@@ -34,6 +39,8 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
+
+        time = 0;
 
         this.startService(new Intent(this, LocationService.class));
         this.bindService(new Intent(this, LocationService.class),
@@ -117,6 +124,37 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
                 public void run() {
                     if(myService.isRecording()){
                         myService.updateLocation();
+                        float fdist = myService.getDistance();
+                        TextView distanceTV = (TextView) findViewById(R.id.distanceTextView);
+                        int dist = (int) fdist;
+                        int km = (int) Math.floor(dist/1000);
+                        int metres = dist % 1000;
+                        metres /= 10;
+                        String mPrint;
+                        if(metres < 10){
+                            mPrint = "0"+metres;
+                        } else {
+                            mPrint = ""+metres;
+                        }
+                        distanceTV.setText(""+km+":"+mPrint+" km");
+
+                        time += 1;
+                        TextView durationTV = (TextView) findViewById(R.id.durationTextView);
+                        int remainder = time % 60;
+                        int left = time/60;
+                        String leftString;
+                        if(left < 10){
+                            leftString = "0"+left;
+                        } else {
+                            leftString = ""+left;
+                        }
+                        String remainderString;
+                        if(remainder<10){
+                            remainderString = "0"+remainder;
+                        } else {
+                            remainderString = ""+remainder;
+                        }
+                        durationTV.setText(""+leftString+":"+remainderString);
                     }
                 }
             });
