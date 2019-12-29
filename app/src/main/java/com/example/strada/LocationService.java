@@ -105,6 +105,8 @@ public class LocationService extends Service {
 
         public int getAveragePace(){ return LocationService.this.getAveragePace();}
 
+        public Location getCurrentLocation(){ return LocationService.this.getCurrentLocation();}
+
         public void registerCallback(ICallback callback) {
             this.callback = callback;
             remoteCallbackList.register(MyBinder.this);
@@ -183,6 +185,11 @@ public class LocationService extends Service {
         int iPace = (int) fPace;
         Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
         return iPace;
+    }
+
+    @SuppressWarnings("MissingPermission")
+    public Location getCurrentLocation(){
+        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.example.strada;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -9,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PersistableBundle;
@@ -22,6 +24,10 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -29,12 +35,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class RecordActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class RecordActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
 
     private LocationService.MyBinder myService = null;
 
     private MapView mapView;
     private GoogleMap mMap;
+    private Location currentLocation;
+    private Location previousLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +56,10 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
         mapView = (MapView) findViewById(R.id.stradaMapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+    }
+
+    public void createPreviousLocation(){
+        previousLocation = myService.getCurrentLocation();
     }
 
     @Override
@@ -71,12 +83,26 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
+        mMap.setMyLocationEnabled(true);
+        LatLng wollaton = new LatLng(52.95349, -1.199395);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(wollaton, 16.0f));
 
-        // Add a marker in Sydney, Australia, and move the camera.
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.setOnPolylineClickListener(this);
+
         Log.d("g53mdp", "Map is showing");
+    }
+
+    public void moveCamera(){
+        currentLocation = myService.getCurrentLocation();
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
+    }
+
+    public void drawLine(){
+        Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
+                .clickable(false)
+                .add(new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude()),
+                     new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
+        previousLocation = currentLocation;
     }
 
     @Override
@@ -121,7 +147,9 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    moveCamera();
                     if(myService.isRecording()){
+                        drawLine();
                         myService.updateLocation();
                         int dist = myService.getDistance();
                         TextView distanceTV = (TextView) findViewById(R.id.distanceTextView);
@@ -172,6 +200,7 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
     };
 
     public void onPlayButtonClick(View v){
+        createPreviousLocation();
         myService.record();
         TextView stateTV = (TextView) findViewById(R.id.stateTextView);
         stateTV.setText("RECORDING");
@@ -253,5 +282,10 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
             serviceConnection = null;
         }
         mapView.onDestroy();
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+
     }
 }

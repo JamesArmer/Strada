@@ -1,7 +1,7 @@
 package com.example.strada;
 
-import android.app.Activity;
-import android.content.ContentValues;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -9,30 +9,22 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity {
+public class StatisticsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     SimpleCursorAdapter dataAdapter;
     Handler h = new Handler();
 
-    static final int EDIT_RUN_RESULT_CODE = 1;
+    static final int STATS_RESULT_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_statistics);
 
         getContentResolver(). //register content provider
                 registerContentObserver(
@@ -40,7 +32,14 @@ public class MainActivity extends AppCompatActivity {
                 true,
                 new StradaObserver(h));
 
-        queryRun();
+        queryStatsRun(null);
+
+        Spinner spinner = (Spinner) findViewById(R.id.dateSpinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.dates_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
 
         final ListView lv = (ListView) findViewById(R.id.runListView);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() { //add on click listener for the list view
@@ -66,16 +65,14 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putString("duration", duration);
                 bundle.putString("pace", pace);
                 bundle.putString("comments", comments);
-                Intent intent = new Intent(MainActivity.this, EditRunActivity.class);
+                Intent intent = new Intent(StatisticsActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
-                startActivityForResult(intent,EDIT_RUN_RESULT_CODE); //start single run activity with the ID of the run clicked
+                startActivityForResult(intent, STATS_RESULT_CODE); //start single run activity with the ID of the run clicked
             }
         });
     }
 
-    public void queryRun(){
-        String sortOrder = StradaProviderContract.DATE + " DESC";
-
+    public void queryStatsRun(String sortOrder){
         String[] projection = new String[]{
                 StradaProviderContract._ID,
                 StradaProviderContract.NAME,
@@ -116,27 +113,18 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(dataAdapter);
     }
 
-    public void onRecordButtonClick(View v){
-        Intent intent = new Intent(MainActivity.this, RecordActivity.class);
-        startActivity(intent);
-    }
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String selection = (String) parent.getItemAtPosition(position);
+        switch (selection){
+            case("This Week"):
 
-    public void onStatsButtonClick(View v){
-        Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
-        startActivity(intent);
+            case("This Month"):
+        }
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onNothingSelected(AdapterView<?> parent) {
 
-        switch (requestCode) {
-            case(EDIT_RUN_RESULT_CODE):
-                if(resultCode == Activity.RESULT_OK){
-                    Bundle bundle = data.getExtras();
-                }
-                break;
-        }
-        queryRun();
     }
 }
