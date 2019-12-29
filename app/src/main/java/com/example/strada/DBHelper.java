@@ -17,11 +17,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 "date VARCHAR(128), "+
                 "distance VARCHAR(128), "+
                 "duration VARCHAR(128), "+
-                "speed VARCHAR(128), "+
+                "pace VARCHAR(128), "+
                 "comments VARCHAR(128));");
 
         //insert an initial run into the database
-        db.execSQL("INSERT INTO run (name, date, distance, duration, speed, comments) VALUES ('Morning Run', '2019-12-23', '4.95km', '26m 39s', '5:23 /km', 'Hard. Sunny.');");
+        db.execSQL("INSERT INTO run (name, date, distance, duration, pace, comments) VALUES ('Morning Run', '2019-12-23', '4.95km', '26m 39s', '5:23 /km', 'Hard. Sunny.');");
     }
 
 

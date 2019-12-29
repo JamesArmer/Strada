@@ -25,12 +25,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class RecordActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private LocationService.MyBinder myService = null;
-
-    int time;
 
     private MapView mapView;
     private GoogleMap mMap;
@@ -39,8 +40,6 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
-
-        time = 0;
 
         this.startService(new Intent(this, LocationService.class));
         this.bindService(new Intent(this, LocationService.class),
@@ -124,9 +123,8 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
                 public void run() {
                     if(myService.isRecording()){
                         myService.updateLocation();
-                        float fdist = myService.getDistance();
+                        int dist = myService.getDistance();
                         TextView distanceTV = (TextView) findViewById(R.id.distanceTextView);
-                        int dist = (int) fdist;
                         int km = (int) Math.floor(dist/1000);
                         int metres = dist % 1000;
                         metres /= 10;
@@ -136,9 +134,9 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
                         } else {
                             mPrint = ""+metres;
                         }
-                        distanceTV.setText(""+km+":"+mPrint+" km");
+                        distanceTV.setText(""+km+"."+mPrint+" km");
 
-                        time += 1;
+                        int time = myService.getTime();
                         TextView durationTV = (TextView) findViewById(R.id.durationTextView);
                         int remainder = time % 60;
                         int left = time/60;
@@ -149,12 +147,24 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
                             leftString = ""+left;
                         }
                         String remainderString;
-                        if(remainder<10){
+                        if(remainder < 10){
                             remainderString = "0"+remainder;
                         } else {
                             remainderString = ""+remainder;
                         }
                         durationTV.setText(""+leftString+":"+remainderString);
+
+                        int pace = myService.getCurrentPace();
+                        TextView paceTV = (TextView) findViewById(R.id.paceTextView);
+                        remainder = pace % 60;
+                        left = pace/60;
+                        leftString = ""+left;
+                        if(remainder < 10){
+                            remainderString = "0"+remainder;
+                        } else {
+                            remainderString = ""+remainder;
+                        }
+                        paceTV.setText(""+leftString+":"+remainderString+" /km");
                     }
                 }
             });
@@ -171,6 +181,68 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
         myService.pause();
         TextView stateTV = (TextView) findViewById(R.id.stateTextView);
         stateTV.setText("PAUSED");
+    }
+
+    public void onFinishButtonClick(View v){
+        if(myService.isRecording()){
+            return;
+        }
+
+        int dist = myService.getDistance();
+        int km = (int) Math.floor(dist/1000);
+        int metres = dist % 1000;
+        metres /= 10;
+        String mPrint;
+        if(metres < 10){
+            mPrint = "0"+metres;
+        } else {
+            mPrint = ""+metres;
+        }
+
+        int time = myService.getTime();
+        int remainder = time % 60;
+        int left = time/60;
+        String leftString;
+        if(left < 10){
+            leftString = "0"+left;
+        } else {
+            leftString = ""+left;
+        }
+        String remainderString;
+        if(remainder < 10){
+            remainderString = "0"+remainder;
+        } else {
+            remainderString = ""+remainder;
+        }
+
+        int iPace = myService.getCurrentPace();
+        remainder = iPace % 60;
+        left = iPace/60;
+        leftString = ""+left;
+        if(remainder < 10){
+            remainderString = "0"+remainder;
+        } else {
+            remainderString = ""+remainder;
+        }
+
+        String distance = ""+km+"."+mPrint+" km";
+        String duration = ""+leftString+"m "+remainderString+"s";
+        String pace = ""+leftString+":"+remainderString+" /km";
+
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = df.format(c);
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("function", 2);
+        bundle.putString("distance", distance);
+        bundle.putString("duration", duration);
+        bundle.putString("pace", pace);
+        bundle.putString("date", formattedDate);
+
+        Intent intent = new Intent(RecordActivity.this, EditRunActivity.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     @Override

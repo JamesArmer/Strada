@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 String date = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.DATE));
                 String distance = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.DISTANCE));
                 String duration = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.DURATION));
-                String speed = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.SPEED));
+                String pace = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.PACE));
                 String comments = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.COMMENTS));
 
                 Bundle bundle = new Bundle();
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putString("date", date);
                 bundle.putString("distance", distance);
                 bundle.putString("duration", duration);
-                bundle.putString("speed", speed);
+                bundle.putString("pace", pace);
                 bundle.putString("comments", comments);
                 Intent intent = new Intent(MainActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 StradaProviderContract.DATE,
                 StradaProviderContract.DISTANCE,
                 StradaProviderContract.DURATION,
-                StradaProviderContract.SPEED,
+                StradaProviderContract.PACE,
                 StradaProviderContract.COMMENTS
         };
 
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 StradaProviderContract.DATE,
                 StradaProviderContract.DISTANCE,
                 StradaProviderContract.DURATION,
-                StradaProviderContract.SPEED
+                StradaProviderContract.PACE
         };
 
         int[] colResIds = new int[]{
@@ -129,15 +129,6 @@ public class MainActivity extends AppCompatActivity {
             case(EDIT_RUN_RESULT_CODE):
                 if(resultCode == Activity.RESULT_OK){
                     Bundle bundle = data.getExtras();
-                    if(bundle.getInt("function") == 1){
-                        String runWhere = StradaProviderContract._ID + " = ?";
-                        int runID = bundle.getInt("ID");
-                        String[] runIDArg = {""+runID};
-
-                        ContentValues updateComments = new ContentValues();
-                        updateComments.put(StradaProviderContract.COMMENTS, bundle.getString("comments"));
-                        getContentResolver().update(StradaProviderContract.RUN_URI, updateComments, runWhere, runIDArg);
-                    }
                 }
                 break;
         }

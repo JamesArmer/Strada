@@ -16,7 +16,7 @@ public class StradaProviderContract {//public Uris ans Strings to abstract the c
     public static final String DATE = "date";
     public static final String DISTANCE = "distance";
     public static final String DURATION = "duration";
-    public static final String SPEED = "speed";
+    public static final String PACE = "pace";
     public static final String COMMENTS = "comments";
 
 }

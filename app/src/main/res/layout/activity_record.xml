@@ -54,17 +54,17 @@
                 android:textSize="30dp"
                 android:textColor="#000"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="150dp"/>
+                android:layout_marginLeft="140dp"/>
 
             <TextView
-                android:id="@+id/speedTextView"
+                android:id="@+id/paceTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0.0 /km"
+                android:text="0:00 /km"
                 android:textSize="30dp"
                 android:textColor="#000"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="280dp"/>
+                android:layout_marginLeft="275dp"/>
 
 
         </RelativeLayout>
@@ -80,7 +80,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="80dp"
+                android:layout_marginLeft="60dp"
                 android:layout_weight="1"
                 android:clickable="true"
                 android:onClick="onPlayButtonClick"
@@ -91,11 +91,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="240dp"
+                android:layout_marginLeft="180dp"
                 android:layout_weight="1"
                 android:clickable="true"
                 android:onClick="onPauseButtonClick"
                 android:src="@android:drawable/ic_media_pause" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/finishActivityButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="300dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:onClick="onFinishButtonClick"
+                android:src="@android:drawable/checkbox_on_background" />
 
         </RelativeLayout>
 

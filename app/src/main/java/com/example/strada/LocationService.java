@@ -27,6 +27,7 @@ public class LocationService extends Service {
     Location currentLocation;
 
     float distanceTravelled;
+    int time;
 
     protected locationServiceState state;
 
@@ -53,6 +54,7 @@ public class LocationService extends Service {
             while(this.running){
                 try {Thread.sleep(1000);} catch(Exception e) {return;}//thread to do the callbacks for the tracking progress
                 doCallbacks();
+                time += 1;
             }
         }
     }
@@ -95,7 +97,13 @@ public class LocationService extends Service {
             LocationService.this.updateLocation();
         }
 
-        public float getDistance(){ return LocationService.this.getDistance();}
+        public int getDistance(){ return LocationService.this.getDistance();}
+
+        public int getTime(){ return LocationService.this.getTime();}
+
+        public int getCurrentPace(){ return LocationService.this.getCurrentPace();}
+
+        public int getAveragePace(){ return LocationService.this.getAveragePace();}
 
         public void registerCallback(ICallback callback) {
             this.callback = callback;
@@ -139,14 +147,42 @@ public class LocationService extends Service {
                     locationListener);
             distanceTravelled += currentLocation.distanceTo(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
             currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Log.d("g53mdp", ""+distanceTravelled);
+            //Log.d("g53mdp", ""+distanceTravelled);
         } catch(SecurityException e) {
             Log.d("g53mdp", e.toString());
         }
     }
 
-    public float getDistance(){
-        return distanceTravelled;
+    public int getDistance(){
+        return (int)distanceTravelled;
+    }
+
+    public int getTime(){ return time;}
+
+    public int getCurrentPace(){
+        if(distanceTravelled == 0){
+            return 0;
+        }
+        float fTime = (float) time;
+        float fDist = distanceTravelled;
+        fDist /= 1000;
+        float fPace = fTime/fDist;
+        int iPace = (int) fPace;
+        Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
+        return iPace;
+    }
+
+    public int getAveragePace(){
+        if(distanceTravelled == 0){
+            return 0;
+        }
+        float fTime = (float) time;
+        float fDist = distanceTravelled;
+        fDist /= 1000;
+        float fPace = fTime/fDist;
+        int iPace = (int) fPace;
+        Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
+        return iPace;
     }
 
     @Override
@@ -155,6 +191,7 @@ public class LocationService extends Service {
         super.onCreate();
         tracker = new Tracking();
         distanceTravelled = 0;
+        time = 0;
         this.state = locationServiceState.PAUSED;
 
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
