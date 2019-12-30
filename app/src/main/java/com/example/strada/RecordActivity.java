@@ -49,7 +49,6 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
 
-        this.startService(new Intent(this, LocationService.class));
         this.bindService(new Intent(this, LocationService.class),
                 serviceConnection, Context.BIND_AUTO_CREATE);//bind to the service
 

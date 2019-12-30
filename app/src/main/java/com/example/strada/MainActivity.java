@@ -3,6 +3,7 @@ package com.example.strada;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +16,7 @@ import android.widget.SimpleCursorAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -33,6 +35,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        LocalBroadcastReceiver receiver = new LocalBroadcastReceiver();
+        IntentFilter filter = new IntentFilter("com.example.strada.MY_LOCAL_CUSTOM_BROADCAST");
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
         getContentResolver(). //register content provider
                 registerContentObserver(
@@ -117,6 +123,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRecordButtonClick(View v){
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction("com.example.strada.MY_LOCAL_CUSTOM_BROADCAST");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+
         Intent intent = new Intent(MainActivity.this, RecordActivity.class);
         startActivity(intent);
     }

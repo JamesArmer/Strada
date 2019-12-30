@@ -229,7 +229,7 @@ public class LocationService extends Service {
                     .setContentText("Strada currently tracking location")
                     .setContentIntent(pendingIntent)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            startForeground(NOTIFICATION_ID, mBuilder.build());
+            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
         }
     }
 
