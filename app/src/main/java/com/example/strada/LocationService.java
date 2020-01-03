@@ -31,7 +31,7 @@ public class LocationService extends Service {
 
     protected locationServiceState state;
 
-    public enum locationServiceState{
+    public enum locationServiceState{ //the two states the service can be in
         RECORDING,
         PAUSED
     }
@@ -61,7 +61,6 @@ public class LocationService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d("g53mdp", "service onBind");
-
         return new MyBinder();
     }
 
@@ -104,9 +103,9 @@ public class LocationService extends Service {
 
         public int getCurrentPace(){ return LocationService.this.getCurrentPace();}
 
-        public int getAveragePace(){ return LocationService.this.getAveragePace();}
-
         public Location getCurrentLocation(){ return LocationService.this.getCurrentLocation();}
+
+        public void resetService(){ LocationService.this.resetService();}
 
         public void registerCallback(ICallback callback) {
             this.callback = callback;
@@ -121,20 +120,20 @@ public class LocationService extends Service {
     }
 
     @SuppressLint("MissingPermission")
-    public void record(){
+    public void record(){ //begin recording the location
         if(this.state == locationServiceState.PAUSED) {
             this.state = locationServiceState.RECORDING;
             currentLocation = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
         }
     }
 
-    public void pause(){
+    public void pause(){ //stop recording the location
         if(this.state == locationServiceState.RECORDING) {
             this.state = locationServiceState.PAUSED;
         }
     }
 
-    public boolean isRecording(){
+    public boolean isRecording(){ //check if the service is currently recording
         if(this.state == locationServiceState.RECORDING) {
             return true;
         } else {
@@ -142,15 +141,14 @@ public class LocationService extends Service {
         }
     }
 
-    public void updateLocation(){
+    public void updateLocation(){ //update the distance and current location
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    5, // minimum time interval between updates
-                    5, // minimum distance between updates, in metres
+                    5,
+                    5,
                     locationListener);
             distanceTravelled += currentLocation.distanceTo(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
             currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            //Log.d("g53mdp", ""+distanceTravelled);
         } catch(SecurityException e) {
             Log.d("g53mdp", e.toString());
         }
@@ -158,13 +156,13 @@ public class LocationService extends Service {
 
     public int getDistance(){
         return (int)distanceTravelled;
-    }
+    } //return the distance travelled so far
 
-    public void incrementTime(){ time++;}
+    public void incrementTime(){ time++;} //add one second to the time
 
-    public int getTime(){ return time;}
+    public int getTime(){ return time;} //get the current time
 
-    public int getCurrentPace(){
+    public int getCurrentPace(){ //calculate the time per km
         if(distanceTravelled == 0){
             return 0;
         }
@@ -173,36 +171,27 @@ public class LocationService extends Service {
         fDist /= 1000;
         float fPace = fTime/fDist;
         int iPace = (int) fPace;
-        //Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
-        return iPace;
-    }
-
-    public int getAveragePace(){
-        if(distanceTravelled == 0){
-            return 0;
-        }
-        float fTime = (float) time;
-        float fDist = distanceTravelled;
-        fDist /= 1000;
-        float fPace = fTime/fDist;
-        int iPace = (int) fPace;
-        //Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
         return iPace;
     }
 
     @SuppressWarnings("MissingPermission")
-    public Location getCurrentLocation(){
+    public Location getCurrentLocation(){ //return the current location
         return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    }
+
+    public void resetService(){ //reset the time and distance to zero
+        time = 0;
+        distanceTravelled = 0;
     }
 
     @Override
     public void onCreate(){
         Log.d("g53mdp", "service onCreate");
         super.onCreate();
-        tracker = new Tracking();
-        distanceTravelled = 0;
-        time = 0;
-        this.state = locationServiceState.PAUSED;
+        tracker = new Tracking(); //start the tracking thread
+        distanceTravelled = 0; //set distance to zero
+        time = 0; //set time to zero
+        this.state = locationServiceState.PAUSED; //start the service off in pause
 
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MyLocationListener();
@@ -232,7 +221,7 @@ public class LocationService extends Service {
                     .setContentText("Strada currently tracking location")
                     .setContentIntent(pendingIntent)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+            notificationManager.notify(NOTIFICATION_ID, mBuilder.build()); //show the notification but service runs in the background
         }
     }
 

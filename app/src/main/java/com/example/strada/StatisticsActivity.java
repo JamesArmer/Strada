@@ -24,8 +24,6 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
     SimpleCursorAdapter dataAdapter;
     Handler h = new Handler();
 
-    static final int STATS_RESULT_CODE = 2;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +35,9 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
                 true,
                 new StradaObserver(h));
 
-        queryStatsRun(null, null);
+        queryStatsRun(null, null); //show all the runs
 
-        Spinner spinner = (Spinner) findViewById(R.id.dateSpinner);
+        Spinner spinner = (Spinner) findViewById(R.id.dateSpinner); //set up the spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.dates_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -51,7 +49,7 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
             public void onItemClick(AdapterView<?> myAdapter,
                                     View myView,
                                     int myItemInt,
-                                    long mylng) {
+                                    long mylng) { //allow the runs in the list view to be clicked
                 Cursor selectedFromList = (Cursor) lv.getItemAtPosition(myItemInt); //get values from the clicked run
                 int ID = selectedFromList.getInt(selectedFromList.getColumnIndexOrThrow(StradaProviderContract._ID));
                 String name = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.NAME));
@@ -61,7 +59,7 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
                 String pace = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.PACE));
                 String comments = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.COMMENTS));
 
-                Bundle bundle = new Bundle();
+                Bundle bundle = new Bundle(); //add all the values to the bundle
                 bundle.putInt("function", 1);
                 bundle.putInt("ID", ID);
                 bundle.putString("name", name);
@@ -72,13 +70,13 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
                 bundle.putString("comments", comments);
                 Intent intent = new Intent(StatisticsActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
-                startActivityForResult(intent, STATS_RESULT_CODE); //start single run activity with the ID of the run clicked
+                startActivity(intent); //start single run activity with the values of the run clicked
             }
         });
     }
 
     public void queryStatsRun(String selection, String[] selectionArgs){
-        String sortOrder = StradaProviderContract.DATE + " DESC";
+        String sortOrder = StradaProviderContract.DATE + " DESC"; //show newest runs first
 
         String[] projection = new String[]{
                 StradaProviderContract._ID,
@@ -121,17 +119,17 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) { //change selection when the spinner is changed
         String selection = (String) parent.getItemAtPosition(position);
         switch (selection){
-            case("All"):
+            case("All"): //select all the runs
                 queryStatsRun(null, null);
                 break;
-            case("This Week"):
+            case("This Week"): //select all the runs this week
                 int currentWeek = new Time().getWeekNumber();
                 queryStatsRun("DATE(date) >= DATE('now', 'weekday 0', '-7 days')", null);
                 break;
-            case("This Month"):
+            case("This Month"): //select all the runs this month
                 DateFormat dateFormat = new SimpleDateFormat("MM");
                 Date date = new Date();
                 String month = dateFormat.format(date);

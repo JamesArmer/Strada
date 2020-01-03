@@ -65,7 +65,7 @@ public class StradaProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         switch(uriMatcher.match(uri)){
-            case 1: //retrieve recipes
+            case 1: //retrieve runs
                 return db.query("run", projection, selection, selectionArgs, null, null, sortOrder);
             default:
                 return null;
@@ -79,7 +79,7 @@ public class StradaProvider extends ContentProvider {
         Log.d("g53mdp", uri.toString() + " " + uriMatcher.match(uri));
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        switch(uriMatcher.match(uri)){
+        switch(uriMatcher.match(uri)){ //update the run table
             case 1:
                 count = db.update("run", values, selection, selectionArgs);
                 return count;
@@ -93,7 +93,7 @@ public class StradaProvider extends ContentProvider {
         Log.d("g53mdp", uri.toString() + " " + uriMatcher.match(uri));
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        switch(uriMatcher.match(uri)){ //select the correct table to delete from
+        switch(uriMatcher.match(uri)){ //delete from the run table
             case 1:
                 count = db.delete("run", selection, selectionArgs);
                 return count;

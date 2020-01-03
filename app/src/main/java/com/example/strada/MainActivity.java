@@ -1,9 +1,11 @@
 package com.example.strada;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +18,8 @@ import android.widget.SimpleCursorAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -29,14 +33,23 @@ public class MainActivity extends AppCompatActivity {
     SimpleCursorAdapter dataAdapter;
     Handler h = new Handler();
 
-    static final int EDIT_RUN_RESULT_CODE = 1;
+    static final int MY_PERMISSIONS_REQUEST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        LocalBroadcastReceiver receiver = new LocalBroadcastReceiver();
+        if (ContextCompat.checkSelfPermission(this, //prompt the user to enable permissions
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE
+                    , Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST);
+        }
+
+        LocalBroadcastReceiver receiver = new LocalBroadcastReceiver(); //set up the local broadcast
         IntentFilter filter = new IntentFilter("com.example.strada.MY_LOCAL_CUSTOM_BROADCAST");
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
@@ -46,14 +59,14 @@ public class MainActivity extends AppCompatActivity {
                 true,
                 new StradaObserver(h));
 
-        queryRun();
+        queryRun(); //query the runs to fill the list view
 
         final ListView lv = (ListView) findViewById(R.id.runListView);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() { //add on click listener for the list view
             public void onItemClick(AdapterView<?> myAdapter,
                                     View myView,
                                     int myItemInt,
-                                    long mylng) {
+                                    long mylng) { //allow the runs in the list view to be clicked
                 Cursor selectedFromList = (Cursor) lv.getItemAtPosition(myItemInt); //get values from the clicked run
                 int ID = selectedFromList.getInt(selectedFromList.getColumnIndexOrThrow(StradaProviderContract._ID));
                 String name = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.NAME));
@@ -63,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 String pace = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.PACE));
                 String comments = selectedFromList.getString(selectedFromList.getColumnIndexOrThrow(StradaProviderContract.COMMENTS));
 
-                Bundle bundle = new Bundle();
+                Bundle bundle = new Bundle(); //add all the values to the bundle
                 bundle.putInt("function", 1);
                 bundle.putInt("ID", ID);
                 bundle.putString("name", name);
@@ -74,13 +87,13 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putString("comments", comments);
                 Intent intent = new Intent(MainActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
-                startActivityForResult(intent,EDIT_RUN_RESULT_CODE); //start single run activity with the ID of the run clicked
+                startActivity(intent); //start single run activity with the values of the run clicked
             }
         });
     }
 
-    public void queryRun(){
-        String sortOrder = StradaProviderContract.DATE + " DESC";
+    public void queryRun(){ //query the run table for all the runs
+        String sortOrder = StradaProviderContract.DATE + " DESC"; //show the most recent first
 
         String[] projection = new String[]{
                 StradaProviderContract._ID,
@@ -122,16 +135,16 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(dataAdapter);
     }
 
-    public void onRecordButtonClick(View v){
+    public void onRecordButtonClick(View v){ //start the record activity
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction("com.example.strada.MY_LOCAL_CUSTOM_BROADCAST");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent); //send the local broadcast to start the service
 
         Intent intent = new Intent(MainActivity.this, RecordActivity.class);
         startActivity(intent);
     }
 
-    public void onStatsButtonClick(View v){
+    public void onStatsButtonClick(View v){ //start the statistics activity
         Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
         startActivity(intent);
     }
@@ -140,13 +153,6 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch (requestCode) {
-            case(EDIT_RUN_RESULT_CODE):
-                if(resultCode == Activity.RESULT_OK){
-                    Bundle bundle = data.getExtras();
-                }
-                break;
-        }
-        queryRun();
+        queryRun(); //query the runs again to show any updates
     }
 }
