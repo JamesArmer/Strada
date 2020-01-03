@@ -42,7 +42,7 @@ public class LocationService extends Service {
 
     private final IBinder binder = new MyBinder();
 
-    protected class Tracking extends Thread implements  Runnable{
+    protected class Tracking extends Thread implements Runnable{
 
         public boolean running = true;
 
@@ -54,7 +54,6 @@ public class LocationService extends Service {
             while(this.running){
                 try {Thread.sleep(1000);} catch(Exception e) {return;}//thread to do the callbacks for the tracking progress
                 doCallbacks();
-                time += 1;
             }
         }
     }
@@ -98,6 +97,8 @@ public class LocationService extends Service {
         }
 
         public int getDistance(){ return LocationService.this.getDistance();}
+
+        public void incrementTime(){ LocationService.this.incrementTime();}
 
         public int getTime(){ return LocationService.this.getTime();}
 
@@ -159,6 +160,8 @@ public class LocationService extends Service {
         return (int)distanceTravelled;
     }
 
+    public void incrementTime(){ time++;}
+
     public int getTime(){ return time;}
 
     public int getCurrentPace(){
@@ -170,7 +173,7 @@ public class LocationService extends Service {
         fDist /= 1000;
         float fPace = fTime/fDist;
         int iPace = (int) fPace;
-        Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
+        //Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
         return iPace;
     }
 
@@ -183,7 +186,7 @@ public class LocationService extends Service {
         fDist /= 1000;
         float fPace = fTime/fDist;
         int iPace = (int) fPace;
-        Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
+        //Log.d("g53mdp", ""+fTime+" / "+fDist+" = "+iPace);
         return iPace;
     }
 

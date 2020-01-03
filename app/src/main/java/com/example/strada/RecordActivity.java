@@ -150,6 +150,8 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
                     if(myService.isRecording()){
                         drawLine();
                         myService.updateLocation();
+                        myService.incrementTime();
+
                         int dist = myService.getDistance();
                         TextView distanceTV = (TextView) findViewById(R.id.distanceTextView);
                         int km = (int) Math.floor(dist/1000);
@@ -230,32 +232,34 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
         int time = myService.getTime();
         int remainder = time % 60;
         int left = time/60;
-        String leftString;
+        Log.d("g53mdp", ""+remainder);
+        String durationMinutes;
         if(left < 10){
-            leftString = "0"+left;
+            durationMinutes = "0"+left;
         } else {
-            leftString = ""+left;
+            durationMinutes = ""+left;
         }
-        String remainderString;
+        String durationRemainder;
         if(remainder < 10){
-            remainderString = "0"+remainder;
+            durationRemainder = "0"+remainder;
         } else {
-            remainderString = ""+remainder;
+            durationRemainder = ""+remainder;
         }
 
-        int iPace = myService.getCurrentPace();
+        int iPace = myService.getAveragePace();
         remainder = iPace % 60;
         left = iPace/60;
-        leftString = ""+left;
+        String paceMinutes = ""+left;
+        String paceRemainder;
         if(remainder < 10){
-            remainderString = "0"+remainder;
+            paceRemainder = "0"+remainder;
         } else {
-            remainderString = ""+remainder;
+            paceRemainder = ""+remainder;
         }
 
         String distance = ""+km+"."+mPrint+" km";
-        String duration = ""+leftString+"m "+remainderString+"s";
-        String pace = ""+leftString+":"+remainderString+" /km";
+        String duration = ""+durationMinutes+"m "+durationRemainder+"s";
+        String pace = ""+paceMinutes+":"+paceRemainder+" /km";
 
         Date c = Calendar.getInstance().getTime();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");

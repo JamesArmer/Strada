@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="dates_array">
+        <item>All</item>
         <item>This Week</item>
         <item>This Month</item>
     </string-array>

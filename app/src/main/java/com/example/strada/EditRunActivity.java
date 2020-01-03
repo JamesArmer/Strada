@@ -84,10 +84,6 @@ public class EditRunActivity extends AppCompatActivity {
             String comments = commentsET.getText().toString();
             String name = nameET.getText().toString();
 
-            String runWhere = StradaProviderContract._ID + " = ?";
-            int runID = bundle.getInt("ID");
-            String[] runIDArg = {""+runID};
-
             ContentValues insert = new ContentValues();
             insert.put(StradaProviderContract.NAME, name);
             insert.put(StradaProviderContract.DATE, bundle.getString("date"));

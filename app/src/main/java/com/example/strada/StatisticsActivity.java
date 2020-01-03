@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,6 +14,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class StatisticsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -32,7 +37,7 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
                 true,
                 new StradaObserver(h));
 
-        queryStatsRun(null);
+        queryStatsRun(null, null);
 
         Spinner spinner = (Spinner) findViewById(R.id.dateSpinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -72,7 +77,9 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
         });
     }
 
-    public void queryStatsRun(String sortOrder){
+    public void queryStatsRun(String selection, String[] selectionArgs){
+        String sortOrder = StradaProviderContract.DATE + " DESC";
+
         String[] projection = new String[]{
                 StradaProviderContract._ID,
                 StradaProviderContract.NAME,
@@ -99,7 +106,7 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
                 R.id.speedTextView
         };
 
-        Cursor cursor = getContentResolver().query(StradaProviderContract.RUN_URI, projection, null, null, sortOrder);
+        Cursor cursor = getContentResolver().query(StradaProviderContract.RUN_URI, projection, selection, selectionArgs, sortOrder);
 
         dataAdapter = new SimpleCursorAdapter(
                 this,
@@ -117,9 +124,20 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String selection = (String) parent.getItemAtPosition(position);
         switch (selection){
+            case("All"):
+                queryStatsRun(null, null);
+                break;
             case("This Week"):
-
+                int currentWeek = new Time().getWeekNumber();
+                queryStatsRun("DATE(date) >= DATE('now', 'weekday 0', '-7 days')", null);
+                break;
             case("This Month"):
+                DateFormat dateFormat = new SimpleDateFormat("MM");
+                Date date = new Date();
+                String month = dateFormat.format(date);
+                String[] selectionArgs = {month};
+                queryStatsRun("strftime('%m', date) = ?", selectionArgs);
+                break;
         }
     }
 
