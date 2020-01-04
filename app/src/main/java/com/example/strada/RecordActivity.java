@@ -273,7 +273,7 @@ public class RecordActivity extends AppCompatActivity implements OnMapReadyCallb
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String formattedDate = df.format(c);
 
-        myService.resetTime(); //reset the time to zero if the user wants to record again straight after
+        myService.resetService(); //reset the time to zero if the user wants to record again straight after
 
         Bundle bundle = new Bundle(); //add values to bundle
         bundle.putInt("function", 2);

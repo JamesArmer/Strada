@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     SimpleCursorAdapter dataAdapter;
     Handler h = new Handler();
 
+    static final int EDIT_ACTIVIITY_RESULT_CODE = 1;
     static final int MY_PERMISSIONS_REQUEST = 2;
 
     @Override
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putString("comments", comments);
                 Intent intent = new Intent(MainActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
-                startActivity(intent); //start single run activity with the values of the run clicked
+                startActivityForResult(intent, EDIT_ACTIVIITY_RESULT_CODE); //start single run activity with the values of the run clicked
             }
         });
     }

@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import android.util.Log;
-import android.widget.TextView;
 
 import androidx.core.app.NotificationCompat;
 

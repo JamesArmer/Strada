@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,8 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
 
     SimpleCursorAdapter dataAdapter;
     Handler h = new Handler();
+
+    static final int STATS_ACTIVITY_RESULT_CODE = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +40,7 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
 
         queryStatsRun(null, null); //show all the runs
 
-        Spinner spinner = (Spinner) findViewById(R.id.dateSpinner); //set up the spinner
+        Spinner spinner = findViewById(R.id.dateSpinner); //set up the spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.dates_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -70,7 +73,7 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
                 bundle.putString("comments", comments);
                 Intent intent = new Intent(StatisticsActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
-                startActivity(intent); //start single run activity with the values of the run clicked
+                startActivityForResult(intent, STATS_ACTIVITY_RESULT_CODE); //start single run activity with the values of the run clicked
             }
         });
     }
@@ -118,23 +121,43 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
         listView.setAdapter(dataAdapter);
     }
 
+    public float queryTotalDistance(String selection, String[] selectionArgs){
+        String[] projection = new String[]{
+                StradaProviderContract._ID,
+                StradaProviderContract.DISTANCE
+        };
+
+        Cursor cursor = getContentResolver().query(StradaProviderContract.DIST_URI, projection, selection, selectionArgs, null);
+        cursor.moveToFirst();
+        float dist = cursor.getFloat(cursor.getColumnIndexOrThrow(StradaProviderContract.SUM));
+        return dist;
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) { //change selection when the spinner is changed
         String selection = (String) parent.getItemAtPosition(position);
+        TextView distTV = findViewById(R.id.totalDistanceTextView); //update the text with the total distance
+        float dist;
         switch (selection){
             case("All"): //select all the runs
                 queryStatsRun(null, null);
+                dist = queryTotalDistance(StradaProviderContract._ID+" > -1", null);
+                distTV.setText("Total Distance: "+dist+"km");
                 break;
             case("This Week"): //select all the runs this week
                 int currentWeek = new Time().getWeekNumber();
-                queryStatsRun("DATE(date) >= DATE('now', 'weekday 0', '-7 days')", null);
+                queryStatsRun("DATE("+StradaProviderContract.DATE+") >= DATE('now', 'weekday 0', '-7 days')", null);
+                dist = queryTotalDistance("DATE("+StradaProviderContract.DATE+") >= DATE('now', 'weekday 0', '-7 days')", null);
+                distTV.setText("Total Distance: "+dist+"km");
                 break;
             case("This Month"): //select all the runs this month
                 DateFormat dateFormat = new SimpleDateFormat("MM");
                 Date date = new Date();
                 String month = dateFormat.format(date);
                 String[] selectionArgs = {month};
-                queryStatsRun("strftime('%m', date) = ?", selectionArgs);
+                queryStatsRun("strftime('%m', "+StradaProviderContract.DATE+") = ?", selectionArgs);
+                dist = queryTotalDistance("strftime('%m', "+StradaProviderContract.DATE+") = ?", selectionArgs);
+                distTV.setText("Total Distance: "+dist+"km");
                 break;
         }
     }
@@ -142,5 +165,14 @@ public class StatisticsActivity extends AppCompatActivity implements AdapterView
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        queryStatsRun(null, null); //query the runs again to show any updates
+        Spinner spinner = findViewById(R.id.dateSpinner);
+        spinner.setSelection(0);
     }
 }
