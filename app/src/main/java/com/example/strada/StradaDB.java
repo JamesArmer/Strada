@@ -4,9 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class DBHelper extends SQLiteOpenHelper {
+public class StradaDB extends SQLiteOpenHelper {
 
-    public DBHelper(Context context){
+    public StradaDB(Context context){
         super(context, "mydb", null, 1);
     }
 

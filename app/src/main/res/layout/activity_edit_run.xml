@@ -23,14 +23,14 @@
             app:layout_constraintTop_toTopOf="parent"
             android:paddingBottom="50dp">
 
-            <TextView
-                android:id="@+id/nameTextView"
+            <EditText
+                android:id="@+id/nameEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:text="Name"
                 android:textColor="#000"
-                android:textSize="30dp" />
+                android:textSize="30dp"
+                android:hint="Name"/>
 
             <TextView
                 android:id="@+id/dateTextView"
@@ -88,6 +88,26 @@
             android:ems="20"
             android:inputType="textPersonName"
             android:hint="Comments" />
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="69dp"
+            android:background="#D000796B"
+            android:onClick="onSaveButtonClick"
+            android:text="Save"
+            android:textColor="#FFF" />
+
+        <Button
+            android:id="@+id/deleteButton"
+            android:layout_width="match_parent"
+            android:layout_height="69dp"
+            android:layout_marginTop="10dp"
+            android:background="#F04343"
+            android:onClick="onDeleteButtonClick"
+            android:text="Delete"
+            android:textColor="#FFF" />
+
     </LinearLayout>
 
 

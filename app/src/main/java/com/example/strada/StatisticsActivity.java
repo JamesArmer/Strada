@@ -1,58 +1,36 @@
 package com.example.strada;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.ContentValues;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity {
+public class StatisticsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     SimpleCursorAdapter dataAdapter;
     Handler h = new Handler();
 
-    static final int EDIT_ACTIVIITY_RESULT_CODE = 1;
-    static final int MY_PERMISSIONS_REQUEST = 2;
+    static final int STATS_ACTIVITY_RESULT_CODE = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        if (ContextCompat.checkSelfPermission(this, //prompt the user to enable permissions
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE
-                    , Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST);
-        }
-
-        LocalBroadcastReceiver receiver = new LocalBroadcastReceiver(); //set up the local broadcast
-        IntentFilter filter = new IntentFilter("com.example.strada.MY_LOCAL_CUSTOM_BROADCAST");
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        setContentView(R.layout.activity_statistics);
 
         getContentResolver(). //register content provider
                 registerContentObserver(
@@ -60,7 +38,14 @@ public class MainActivity extends AppCompatActivity {
                 true,
                 new StradaObserver(h));
 
-        queryRun(); //query the runs to fill the list view
+        queryStatsRun(null, null); //show all the runs
+
+        Spinner spinner = findViewById(R.id.dateSpinner); //set up the spinner
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.dates_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
 
         final ListView lv = (ListView) findViewById(R.id.runListView);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() { //add on click listener for the list view
@@ -86,15 +71,15 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putString("duration", duration);
                 bundle.putString("pace", pace);
                 bundle.putString("comments", comments);
-                Intent intent = new Intent(MainActivity.this, EditRunActivity.class);
+                Intent intent = new Intent(StatisticsActivity.this, EditRunActivity.class);
                 intent.putExtras(bundle);
-                startActivityForResult(intent, EDIT_ACTIVIITY_RESULT_CODE); //start single run activity with the values of the run clicked
+                startActivityForResult(intent, STATS_ACTIVITY_RESULT_CODE); //start single run activity with the values of the run clicked
             }
         });
     }
 
-    public void queryRun(){ //query the run table for all the runs
-        String sortOrder = StradaProviderContract.DATE + " DESC"; //show the most recent first
+    public void queryStatsRun(String selection, String[] selectionArgs){
+        String sortOrder = StradaProviderContract.DATE + " DESC"; //show newest runs first
 
         String[] projection = new String[]{
                 StradaProviderContract._ID,
@@ -122,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.speedTextView
         };
 
-        Cursor cursor = getContentResolver().query(StradaProviderContract.RUN_URI, projection, null, null, sortOrder);
+        Cursor cursor = getContentResolver().query(StradaProviderContract.RUN_URI, projection, selection, selectionArgs, sortOrder);
 
         dataAdapter = new SimpleCursorAdapter(
                 this,
@@ -136,24 +121,58 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(dataAdapter);
     }
 
-    public void onRecordButtonClick(View v){ //start the record activity
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction("com.example.strada.MY_LOCAL_CUSTOM_BROADCAST");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent); //send the local broadcast to start the service
+    public float queryTotalDistance(String selection, String[] selectionArgs){
+        String[] projection = new String[]{
+                StradaProviderContract._ID,
+                StradaProviderContract.DISTANCE
+        };
 
-        Intent intent = new Intent(MainActivity.this, RecordActivity.class);
-        startActivity(intent);
+        Cursor cursor = getContentResolver().query(StradaProviderContract.DIST_URI, projection, selection, selectionArgs, null);
+        cursor.moveToFirst();
+        float dist = cursor.getFloat(cursor.getColumnIndexOrThrow(StradaProviderContract.SUM));
+        return dist;
     }
 
-    public void onStatsButtonClick(View v){ //start the statistics activity
-        Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
-        startActivity(intent);
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) { //change selection when the spinner is changed
+        String selection = (String) parent.getItemAtPosition(position);
+        TextView distTV = findViewById(R.id.totalDistanceTextView); //update the text with the total distance
+        float dist;
+        switch (selection){
+            case("All"): //select all the runs
+                queryStatsRun(null, null);
+                dist = queryTotalDistance(StradaProviderContract._ID+" > -1", null);
+                distTV.setText("Total Distance: "+dist+"km");
+                break;
+            case("This Week"): //select all the runs this week
+                int currentWeek = new Time().getWeekNumber();
+                queryStatsRun("DATE("+StradaProviderContract.DATE+") >= DATE('now', 'weekday 0', '-7 days')", null);
+                dist = queryTotalDistance("DATE("+StradaProviderContract.DATE+") >= DATE('now', 'weekday 0', '-7 days')", null);
+                distTV.setText("Total Distance: "+dist+"km");
+                break;
+            case("This Month"): //select all the runs this month
+                DateFormat dateFormat = new SimpleDateFormat("MM");
+                Date date = new Date();
+                String month = dateFormat.format(date);
+                String[] selectionArgs = {month};
+                queryStatsRun("strftime('%m', "+StradaProviderContract.DATE+") = ?", selectionArgs);
+                dist = queryTotalDistance("strftime('%m', "+StradaProviderContract.DATE+") = ?", selectionArgs);
+                distTV.setText("Total Distance: "+dist+"km");
+                break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        queryRun(); //query the runs again to show any updates
+        queryStatsRun(null, null); //query the runs again to show any updates
+        Spinner spinner = findViewById(R.id.dateSpinner);
+        spinner.setSelection(0);
     }
 }

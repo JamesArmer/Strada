@@ -11,19 +11,20 @@ import android.util.Log;
 
 public class StradaProvider extends ContentProvider {
 
-    DBHelper dbHelper = null;
+    StradaDB dbHelper = null;
 
     private static final UriMatcher uriMatcher;
 
     static { //Uri matcher for the various switch statements
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(StradaProviderContract.AUTHORITY, "run", 1);
+        uriMatcher.addURI(StradaProviderContract.AUTHORITY, "dist", 2);
     }
 
     @Override
     public boolean onCreate() {
         Log.d("g53mdp", "contentprovider oncreate");
-        this.dbHelper = new DBHelper(this.getContext());
+        this.dbHelper = new StradaDB(this.getContext());
         return true;
     }
 
@@ -65,8 +66,10 @@ public class StradaProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         switch(uriMatcher.match(uri)){
-            case 1: //retrieve recipes
+            case 1: //retrieve runs
                 return db.query("run", projection, selection, selectionArgs, null, null, sortOrder);
+            case 2: //retrieves total distances
+                return db.rawQuery("SELECT SUM(distance) FROM run WHERE "+selection, selectionArgs);
             default:
                 return null;
         }
@@ -79,7 +82,7 @@ public class StradaProvider extends ContentProvider {
         Log.d("g53mdp", uri.toString() + " " + uriMatcher.match(uri));
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        switch(uriMatcher.match(uri)){
+        switch(uriMatcher.match(uri)){ //update the run table
             case 1:
                 count = db.update("run", values, selection, selectionArgs);
                 return count;
@@ -93,7 +96,7 @@ public class StradaProvider extends ContentProvider {
         Log.d("g53mdp", uri.toString() + " " + uriMatcher.match(uri));
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        switch(uriMatcher.match(uri)){ //select the correct table to delete from
+        switch(uriMatcher.match(uri)){ //delete from the run table
             case 1:
                 count = db.delete("run", selection, selectionArgs);
                 return count;
